@@ -97,20 +97,8 @@ namespace		Thread
 
   void ThreadPool::waitForFinish(void)
   {
-    std::cout << "In wait for finish" << std::endl;
-    std::cout << "Active workers: " << this->getActiveWorkerCount() << std::endl;
-    std::cout << "Tasks: " << this->tasks.size() << std::endl;
     while (this->getActiveWorkerCount() ||
 	   this->tasks.size())
-      {
-	std::cout << "Wait for finish before condwait" << std::endl;
- 	std::cout << "Active workers: " << this->getActiveWorkerCount() << std::endl;
-	std::cout << "Tasks: " << this->tasks.size() << std::endl;
-	this->noMoreTaskCond.wait();
-	std::cout << "Wait for finish after condwait" << std::endl;
-      }
-    std::cout << "Wait for finish done" << std::endl;
-    std::cout << "Active workers: " << this->getActiveWorkerCount() << std::endl;
-    std::cout << "Tasks: " << this->tasks.size() << std::endl;
+      this->noMoreTaskCond.wait();
   }
 }

@@ -21,25 +21,50 @@
 #include "ThreadPool.hpp"
 #include "SafeStl.hpp"
 
-class Toto : public Thread::ITask
+class TaskA : public Thread::ITask
 {
 public:
-  Toto(Thread::Lock & lock) : lock(lock) {}
-  ~Toto(void) {}
+  TaskA(Thread::Lock & lock) : lock(lock) {}
+  ~TaskA(void) {}
 
   virtual void process(void)
   {
-    // this->lock.lock();
-    // std::cout << "Processing..." << std::endl;
-    // this->lock.unlock();
+    this->lock.lock();
+    std::cout << "Task A: Processing..." << std::endl;
+    this->lock.unlock();
 # ifdef _WIN32
-  Sleep(2000);
+    // Sleep(random() % 10);
 # else
-  usleep(random() % 1000);
+    // sleep(random() % 10);
 # endif
-    // this->lock.lock();
-    // std::cout << "Done processing" << std::endl;
-    // this->lock.unlock();
+    this->lock.lock();
+    std::cout << "Task A: Done processing" << std::endl;
+    this->lock.unlock();
+  }
+
+private:
+  Thread::Lock &	lock;
+};
+
+class TaskB : public Thread::ITask
+{
+public:
+  TaskB(Thread::Lock & lock) : lock(lock) {}
+  ~TaskB(void) {}
+
+  virtual void process(void)
+  {
+    this->lock.lock();
+    std::cout << "Task B: Processing..." << std::endl;
+    this->lock.unlock();
+# ifdef _WIN32
+    // Sleep(random() % 20);
+# else
+    // sleep(random() % 20);
+# endif
+    this->lock.lock();
+    std::cout << "Task B: Done processing" << std::endl;
+    this->lock.unlock();
   }
 
 private:
@@ -48,16 +73,21 @@ private:
 
 void test(void)
 {
-  Thread::ThreadPool threadPool(10);
+  Thread::ThreadPool threadPool(2);
   Thread::Lock lock;
 
-  for (int i, j = 0; j < 10; ++j) {
-    for (i = 0; i < 50; ++i)
-      threadPool.addTask(new Toto(lock));
+  for (int i, j = 0; j < 1000; ++j) {
+    for (i = 0; i < 500; ++i) {
+      if ((i % 2) == 0)	
+	threadPool.addTask(new TaskA(lock));
+      else
+	threadPool.addTask(new TaskB(lock));
+    }
     lock.lock();
     std::cout << "[" << threadPool.getActiveWorkerCount() << "] / ["
 	      << threadPool.getWorkerCount() << "]" << std::endl;
     lock.unlock();
+    // getc(stdin);
   }
   threadPool.waitForFinish();
 }

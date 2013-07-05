@@ -43,7 +43,6 @@ namespace		Thread
     while (1)
       {
 	this->taskLock.lock();
-	std::cout << "Total executed " << g_task_count << std::endl;
 	if (this->tasks.empty())
 	  {
 	    this->noMoreTaskCond.signal();	
@@ -59,6 +58,8 @@ namespace		Thread
 	    this->status = FREE;
 	    this->taskLock.lock();
 	    ++g_task_count;
+	    delete task;
+	    std::cout << "Total executed " << g_task_count << std::endl;
 	    this->taskLock.unlock();
 	  }	    
 	else
